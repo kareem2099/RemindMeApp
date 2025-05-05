@@ -7,7 +7,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.remindmeapp.screens.auth.LoginScreen
 import com.example.remindmeapp.screens.auth.SignUpScreen
 import com.example.remindmeapp.screens.home.HomeScreen
-import com.example.remindmeapp.screens.addedit.AddEditReminderScreen
+import com.example.remindmeapp.screens.add.AddReminderScreen
+import com.example.remindmeapp.screens.edit.EditReminderScreen
 
 @Composable
 fun AppNavGraph(
@@ -28,9 +29,12 @@ fun AppNavGraph(
         composable(Screen.Home.route) {
             HomeScreen(navController) // Fixed: Added navController parameter
         }
-        composable(Screen.AddEdit.route) { backStackEntry ->
-            val reminderId = backStackEntry.arguments?.getString("reminderId")
-            AddEditReminderScreen(navController, reminderId)
+        composable(Screen.Add.route) {
+            AddReminderScreen(navController)
+        }
+        composable(Screen.Edit.route) { backStackEntry ->
+            val reminderId = backStackEntry.arguments?.getString("reminderId") ?: ""
+            EditReminderScreen(navController, reminderId)
         }
     }
 }

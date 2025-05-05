@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
+import android.util.Log
 
 class ReminderService @Inject constructor() {
     private val db: FirebaseFirestore = Firebase.firestore
@@ -20,9 +21,28 @@ class ReminderService @Inject constructor() {
         return reminder.copy(id = docRef.id)
     }
 
-    suspend fun updateReminder(reminder: Reminder) {
-        remindersCollection.document(reminder.id).set(reminder.toMap()).await()
+    suspend fun getReminder(id: String): Reminder? {
+        return try {
+            val doc = remindersCollection.document(id).get().await()
+            doc.toObject(Reminder::class.java)?.copy(id = doc.id)
+        } catch (e: Exception) {
+            null
+        }
     }
+    
+    
+
+    suspend fun updateReminder(reminder: Reminder): Boolean {
+        return try {
+            remindersCollection.document(reminder.id)
+                .update(reminder.toMap()) // updates customId, title, etc.
+                .await()
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+    
 
     suspend fun deleteReminder(reminderId: String) {
         remindersCollection.document(reminderId).delete().await()

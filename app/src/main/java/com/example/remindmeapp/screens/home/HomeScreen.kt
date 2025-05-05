@@ -93,7 +93,7 @@ fun HomeScreen(navController: NavController) {
             items(reminders) { reminder ->
                 ReminderItem(
                     reminder = reminder,
-                    onReminderClick = { navController.navigate(Screen.AddEdit.createRoute(reminder.id)) }
+                    onReminderClick = { navController.navigate(Screen.Edit.createRoute(reminder.id)) }
                 )
             }
         }
@@ -101,7 +101,7 @@ fun HomeScreen(navController: NavController) {
         // Add Reminder Button - moved up
         PrimaryButton(
             text = "Add Reminder",
-            onClick = { navController.navigate(Screen.AddEdit.createRoute("")) },
+            onClick = { navController.navigate(Screen.Add.createRoute()) },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 16.dp)
