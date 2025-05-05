@@ -18,14 +18,23 @@ class ReminderService @Inject constructor() {
 
     suspend fun addReminder(reminder: Reminder): Reminder {
         val docRef = remindersCollection.add(reminder.toMap()).await()
-        return reminder.copy(id = docRef.id)
+        // Update the document with the generated ID
+        val savedReminder = reminder.copy(id = docRef.id)
+        docRef.update("id", docRef.id).await()
+        return savedReminder
     }
 
     suspend fun getReminder(id: String): Reminder? {
         return try {
             val doc = remindersCollection.document(id).get().await()
-            doc.toObject(Reminder::class.java)?.copy(id = doc.id)
+            if (doc.exists()) {
+                val reminder = doc.toObject(Reminder::class.java)
+                reminder?.copy(id = doc.id)
+            } else {
+                null
+            }
         } catch (e: Exception) {
+            Log.e("ReminderService", "Error getting reminder $id", e)
             null
         }
     }
@@ -35,8 +44,13 @@ class ReminderService @Inject constructor() {
     suspend fun updateReminder(reminder: Reminder): Boolean {
         return try {
             remindersCollection.document(reminder.id)
-                .update(reminder.toMap()) // updates customId, title, etc.
-                .await()
+                .update(
+                    "customId", reminder.customId,
+                    "title", reminder.title,
+                    "description", reminder.description,
+                    "time", reminder.time,
+                    "reminderTime", reminder.reminderTime
+                ).await()
             true
         } catch (e: Exception) {
             false
@@ -55,7 +69,7 @@ class ReminderService @Inject constructor() {
             .snapshots()
             .map { snapshot ->
                 snapshot.documents.map { doc ->
-                    Reminder.fromMap(doc.data ?: emptyMap())
+                    Reminder.fromMap(doc.data ?: emptyMap(), doc.id)
                 }
             }
     }
@@ -69,7 +83,7 @@ class ReminderService @Inject constructor() {
             .snapshots()
             .map { snapshot ->
                 snapshot.documents.map { doc ->
-                    Reminder.fromMap(doc.data ?: emptyMap())
+                    Reminder.fromMap(doc.data ?: emptyMap(), doc.id)
                 }
             }
     }

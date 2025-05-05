@@ -1,6 +1,7 @@
 package com.example.remindmeapp.screens.edit
 
 import android.app.TimePickerDialog
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -77,6 +78,10 @@ fun DateTimePickerSection(
     var isLoading by remember { mutableStateOf(false) }
 
     LaunchedEffect(reminderId) {
+        Log.d("EditReminderScreen", "Loading reminder with ID: $reminderId")
+        if (reminderId.isBlank()) {
+            Log.e("EditReminderScreen", "Received blank reminder ID!")
+        }
         viewModel.loadReminder(reminderId)
     }
 
@@ -143,21 +148,27 @@ fun DateTimePickerSection(
                 onClick = {
                     if (title.isNotBlank()) {
                         isLoading = true
-                        viewModel.reminder.value?.let { current ->
-                            viewModel.updateReminder(
-                                title = title,
-                                description = description,
-                                reminderTime = current.reminderTime,
-                                onComplete = { success ->
-                                    isLoading = false
-                                    if (success) {
-                                        navController.popBackStack()
-                                    }
-                                }
-                            )
-                        } ?: run {
+                        Log.d("EditReminderScreen", "Save button clicked")
+                        val current = viewModel.reminder.value
+                        if (current == null) {
+                            Log.e("EditReminderScreen", "Current reminder is null!")
                             isLoading = false
+                            return@PrimaryButton
                         }
+                        
+                        Log.d("EditReminderScreen", "Calling updateReminder with title: $title, desc: $description, time: ${current.reminderTime}")
+                        viewModel.updateReminder(
+                            title = title,
+                            description = description,
+                            reminderTime = current.reminderTime,
+                            onComplete = { success ->
+                                isLoading = false
+                                Log.d("EditReminderScreen", "Update completed with success: $success")
+                                if (success) {
+                                    navController.popBackStack()
+                                }
+                            }
+                        )
                     }
                 }
             )

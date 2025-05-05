@@ -1,5 +1,6 @@
 package com.example.remindmeapp.screens.home
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -7,15 +8,19 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.MaterialTheme
 import com.example.remindmeapp.ui.components.SearchBar
 import androidx.compose.material3.*
+import com.example.remindmeapp.ui.components.SwipeToDelete
 import androidx.compose.runtime.*
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.background
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -27,7 +32,7 @@ import com.example.remindmeapp.ui.components.PrimaryButton
 import java.text.SimpleDateFormat
 import java.util.*
 import androidx.hilt.navigation.compose.hiltViewModel
-
+import com.example.remindmeapp.ui.theme.AppTypography
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,7 +55,7 @@ fun HomeScreen(navController: NavController) {
         ) {
             Text(
                 text = "Reminders",
-                style = MaterialTheme.typography.headlineMedium,
+                style = AppTypography.displayLarge,
                 fontWeight = FontWeight.Bold
             )
             
@@ -63,11 +68,11 @@ fun HomeScreen(navController: NavController) {
                 onDismissRequest = { showMenu = false }
             ) {
                 DropdownMenuItem(
-                    text = { Text("Settings") },
+                    text = { Text("Settings", style = AppTypography.bodyLarge) },
                     onClick = { /* TODO */ }
                 )
                 DropdownMenuItem(
-                    text = { Text("About") },
+                    text = { Text("About", style = AppTypography.bodyLarge) },
                     onClick = { /* TODO */ }
                 )
             }
@@ -93,12 +98,17 @@ fun HomeScreen(navController: NavController) {
             items(reminders) { reminder ->
                 ReminderItem(
                     reminder = reminder,
-                    onReminderClick = { navController.navigate(Screen.Edit.createRoute(reminder.id)) }
+                    onReminderClick = { 
+                        navController.navigate(Screen.Edit.createRoute(reminder.id)) 
+                    },
+                    onDelete = {
+                        viewModel.deleteReminder(reminder.id)
+                    }
                 )
             }
         }
 
-        // Add Reminder Button - moved up
+        // Add Reminder Button
         PrimaryButton(
             text = "Add Reminder",
             onClick = { navController.navigate(Screen.Add.createRoute()) },
@@ -112,57 +122,62 @@ fun HomeScreen(navController: NavController) {
 @Composable
 fun ReminderItem(
     reminder: Reminder,
-    onReminderClick: () -> Unit
+    onReminderClick: () -> Unit,
+    onDelete: () -> Unit
 ) {
     val formattedDate = remember {
         SimpleDateFormat("MMM dd, hh:mm a", Locale.getDefault())
             .format(Date(reminder.time))
     }
 
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .clickable { onReminderClick() },
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        )
+    SwipeToDelete(
+        onDelete = onDelete
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .clickable { onReminderClick() },
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
             ) {
-                Icon(
-                    imageVector = Icons.Default.Notifications,
-                    contentDescription = "Reminder",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = reminder.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1f)
-                )
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Notifications,
+                            contentDescription = "Reminder",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = reminder.title,
+                            style = AppTypography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = reminder.description,
+                        style = AppTypography.bodyLarge,
+                        color = Color.Gray
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = formattedDate,
+                        style = AppTypography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = reminder.description,
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = formattedDate,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
     }
 }

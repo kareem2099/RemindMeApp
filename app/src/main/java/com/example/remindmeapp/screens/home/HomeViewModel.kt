@@ -54,6 +54,9 @@ class HomeViewModel @Inject constructor(
 
     fun deleteReminder(reminderId: String) {
         viewModelScope.launch {
+            // Update local state immediately
+            _reminders.value = _reminders.value.filter { it.id != reminderId }
+            // Then delete from Firestore
             reminderService.deleteReminder(reminderId)
         }
     }

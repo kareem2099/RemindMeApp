@@ -26,7 +26,8 @@ data class Reminder(
     )
 
     companion object {
-        fun fromMap(map: Map<String, Any>): Reminder = Reminder(
+        fun fromMap(map: Map<String, Any>, id: String = ""): Reminder = Reminder(
+            id = id,
             customId = map["customId"] as? String ?: "",
             title = map["title"] as? String ?: "",
             description = map["description"] as? String ?: "",
@@ -36,4 +37,3 @@ data class Reminder(
         )
     }
 }
-

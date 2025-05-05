@@ -24,7 +24,6 @@ fun AddReminderScreen(
     viewModel: AddReminderViewModel = hiltViewModel()
 ) {
     var customId by remember { mutableStateOf("") }
-    val id = remember { UUID.randomUUID().toString() } // Auto-generated Firestore ID
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var selectedDate by remember { mutableStateOf(System.currentTimeMillis()) }
@@ -121,18 +120,16 @@ fun AddReminderScreen(
                     if (title.isNotBlank()) {
                         isLoading = true
                         viewModel.addReminder(
-                            id = id,
                             customId = customId,
                             title = title,
                             description = description,
-                            reminderTime = selectedDate,
-                            onComplete = { success ->
-                                isLoading = false
-                                if (success) {
-                                    navController.navigateUp()
-                                }
+                            reminderTime = selectedDate
+                        ) { success ->
+                            isLoading = false
+                            if (success) {
+                                navController.navigateUp()
                             }
-                        )
+                        }
                     }
                 }
             )

@@ -16,7 +16,6 @@ class AddReminderViewModel @Inject constructor(
 ) : ViewModel() {
 
     fun addReminder(
-        id: String,
         customId: String,
         title: String,
         description: String,
@@ -25,8 +24,9 @@ class AddReminderViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             try {
+                // Let Firestore generate the ID
                 val reminder = Reminder(
-                    id = id,
+                    id = "", // Will be set by Firestore
                     customId = customId,
                     title = title,
                     description = description,
@@ -34,8 +34,8 @@ class AddReminderViewModel @Inject constructor(
                     reminderTime = reminderTime,
                     userId = authService.getCurrentUserId()
                 )
-                reminderService.addReminder(reminder)
-                onComplete(true)
+                val savedReminder = reminderService.addReminder(reminder)
+                onComplete(savedReminder.id.isNotBlank())
             } catch (e: Exception) {
                 onComplete(false)
             }
